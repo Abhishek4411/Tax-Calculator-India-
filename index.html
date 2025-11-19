@@ -172,6 +172,43 @@
             animation: pulse 2s infinite;
         }
 
+        .news-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        #onlineStatus {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #onlineStatus::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .online {
+            color: #bbf7d0;
+        }
+
+        .offline {
+            color: #e2e8f0;
+        }
+
         .news-ticker-container {
             background: #fffbeb;
             padding: 15px 0;
@@ -679,6 +716,15 @@
             margin-bottom: 10px;
         }
 
+        .investment-card .trend {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .investment-card .benefit {
             background: var(--bg-light);
             padding: 10px;
@@ -736,7 +782,10 @@
                     <span class="live-indicator"></span>
                     Latest Tax & Finance News
                 </h3>
-                <span id="lastUpdate">Updating...</span>
+                <div class="news-status">
+                    <span id="lastUpdate">Fetching latest updates...</span>
+                    <span id="onlineStatus" class="offline">Checking...</span>
+                </div>
             </div>
             
             <div class="news-ticker-container">
@@ -774,18 +823,21 @@
                 <div class="form-section">
                     <div class="section-title">Basic Income</div>
                     <div class="input-group">
-                        <label>Annual CTC / Gross Income</label>
+                        <label>Annual CTC / Gross Income (Yearly)</label>
                         <input type="number" id="ctc" placeholder="2500000" value="2500000">
                     </div>
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Basic Salary</label>
+                            <label>Basic Salary (Annual)</label>
                             <input type="number" id="basic" placeholder="1250000" value="1250000">
                         </div>
                         <div class="input-group">
-                            <label>DA</label>
+                            <label>DA (Annual)</label>
                             <input type="number" id="da" placeholder="0" value="0">
                         </div>
+                    </div>
+                    <div class="info-box">
+                        All amounts in this calculator are annual. If you only know monthly values, multiply by 12 and enter the yearly number.
                     </div>
                 </div>
 
@@ -851,7 +903,7 @@
                         <input type="number" id="epf" placeholder="150000" value="150000">
                     </div>
                     <div class="input-group">
-                        <label>PPF/ELSS/NSC/Others</label>
+                        <label>PPF/ELSS/NSC/Others (Annual Contribution)</label>
                         <input type="number" id="other80c" placeholder="0" value="0">
                     </div>
                     <div class="info-box">
@@ -864,11 +916,11 @@
                     <div class="section-title">80D Health Insurance (Old Regime)</div>
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Self/Family Premium</label>
+                            <label>Self/Family Premium (Annual)</label>
                             <input type="number" id="healthSelf" placeholder="25000" value="25000">
                         </div>
                         <div class="input-group">
-                            <label>Parents Premium</label>
+                            <label>Parents Premium (Annual)</label>
                             <input type="number" id="healthParents" placeholder="0" value="0">
                         </div>
                     </div>
@@ -879,11 +931,11 @@
                     <div class="section-title">NPS (Both Regimes)</div>
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Employer NPS</label>
+                            <label>Employer NPS (Annual Contribution)</label>
                             <input type="number" id="npsEmployer" placeholder="0" value="0">
                         </div>
                         <div class="input-group">
-                            <label>Self NPS 80CCD(1B)</label>
+                            <label>Self NPS 80CCD(1B) (Annual Contribution)</label>
                             <input type="number" id="npsSelf" placeholder="0" value="0">
                         </div>
                     </div>
@@ -896,11 +948,11 @@
                 <div class="form-section">
                     <div class="section-title">Other Deductions (Old Regime)</div>
                     <div class="input-group">
-                        <label>80E Education Loan Interest</label>
+                        <label>80E Education Loan Interest (Annual)</label>
                         <input type="number" id="eduLoanInterest" placeholder="0" value="0">
                     </div>
                     <div class="input-group">
-                        <label>LTA (Leave Travel Allowance)</label>
+                        <label>LTA (Leave Travel Allowance, Annual)</label>
                         <input type="number" id="lta" placeholder="0" value="0">
                     </div>
                 </div>
@@ -1016,7 +1068,7 @@
         let charts = {};
 
         // News Management
-        const newsData = {
+        const staticNewsData = {
             budget: [
                 {
                     title: "Budget 2025: New Tax Rebate Increased to Rs 12.75 Lakh",
@@ -1079,38 +1131,183 @@
             ]
         };
 
+        let newsData = staticNewsData;
+
+        const NEWS_CACHE_KEY = 'taxCalcNewsCache_v1';
+
+        async function fetchNewsFromAPI() {
+            const urls = [
+                'https://saurav.tech/NewsAPI/top-headlines/category/business/in.json',
+                'https://saurav.tech/NewsAPI/top-headlines/category/general/in.json'
+            ];
+
+            const results = await Promise.allSettled(urls.map(url => fetch(url)));
+
+            const articles = [];
+            for (const r of results) {
+                if (r.status === 'fulfilled' && r.value.ok) {
+                    const data = await r.value.json();
+                    if (Array.isArray(data.articles)) {
+                        articles.push(...data.articles);
+                    }
+                }
+            }
+
+            if (!articles.length) {
+                throw new Error('No news articles from API');
+            }
+
+            const budget = [];
+            const tax = [];
+            const investment = [];
+
+            const BUDGET_REGEX = /(budget|union budget|finance minister|fm speech)/i;
+            const TAX_REGEX = /(income tax|ITR|tax slab|TDS|TCS|CBDT|AIS|Section 87A|new tax regime|old tax regime)/i;
+            const INVEST_REGEX = /(ELSS|mutual fund|NPS|PPF|FD|fixed deposit|SIP|home loan|interest rate|personal finance|ULIP|index fund)/i;
+
+            for (const a of articles) {
+                const title = a.title || '';
+                const desc = a.description || '';
+                const text = title + ' ' + desc;
+
+                const item = {
+                    title,
+                    content: desc,
+                    time: a.publishedAt ? new Date(a.publishedAt).toLocaleString('en-IN') : 'Just now',
+                    source: (a.source && a.source.name) || 'News'
+                };
+
+                if (BUDGET_REGEX.test(text)) budget.push(item);
+                if (TAX_REGEX.test(text)) tax.push(item);
+                if (INVEST_REGEX.test(text)) investment.push(item);
+            }
+
+            const fallbackArticle = (article) => ({
+                title: article.title || 'Latest update',
+                content: article.description || '',
+                time: article.publishedAt ? new Date(article.publishedAt).toLocaleString('en-IN') : 'Just now',
+                source: (article.source && article.source.name) || 'News'
+            });
+
+            if (!budget.length && articles[0]) budget.push(fallbackArticle(articles[0]));
+            if (!tax.length && articles[1]) tax.push(fallbackArticle(articles[1]));
+            if (!investment.length && articles[2]) investment.push(fallbackArticle(articles[2]));
+
+            return { budget, tax, investment };
+        }
+
+        async function loadLatestNews() {
+            const lastUpdateEl = document.getElementById('lastUpdate');
+            initializeNews();
+
+            try {
+                if (navigator.onLine) {
+                    const latest = await fetchNewsFromAPI();
+                    newsData = latest;
+
+                    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({
+                        fetchedAt: Date.now(),
+                        newsData: latest
+                    }));
+
+                    if (lastUpdateEl) {
+                        lastUpdateEl.textContent = 'Updated from internet: ' + new Date().toLocaleTimeString('en-IN');
+                    }
+                } else {
+                    throw new Error('Offline');
+                }
+            } catch (e) {
+                const cached = localStorage.getItem(NEWS_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        if (parsed && parsed.newsData) {
+                            newsData = parsed.newsData;
+                            if (lastUpdateEl) {
+                                if (parsed.fetchedAt) {
+                                    lastUpdateEl.textContent = 'Using cached news from: ' + new Date(parsed.fetchedAt).toLocaleString('en-IN');
+                                } else {
+                                    lastUpdateEl.textContent = 'Using cached news';
+                                }
+                            }
+                        } else {
+                            newsData = staticNewsData;
+                            if (lastUpdateEl) {
+                                lastUpdateEl.textContent = 'Using built-in offline news';
+                            }
+                        }
+                    } catch {
+                        newsData = staticNewsData;
+                        if (lastUpdateEl) {
+                            lastUpdateEl.textContent = 'Using built-in offline news';
+                        }
+                    }
+                } else {
+                    newsData = staticNewsData;
+                    if (lastUpdateEl) {
+                        lastUpdateEl.textContent = 'Using built-in offline news';
+                    }
+                }
+            }
+
+            initializeNews();
+
+            if (calculationResults) {
+                generateInvestmentRecommendations();
+            }
+        }
+
         function initializeNews() {
-            // Initialize ticker
             const ticker = document.getElementById('newsTicker');
-            const allNews = [...newsData.budget, ...newsData.tax, ...newsData.investment];
-            
-            // Create ticker items (repeat for continuous scroll)
-            const tickerHTML = [...allNews, ...allNews].map(item => `
-                <div class="news-item">
-                    <span class="badge">BREAKING</span>
-                    <strong>${item.title}</strong> - ${item.source}
-                </div>
-            `).join('');
-            
-            ticker.innerHTML = tickerHTML;
+            if (!ticker) return;
 
-            // Load news tabs
-            loadNewsTab('newsTab0', newsData.budget);
-            loadNewsTab('newsTab1', newsData.tax);
-            loadNewsTab('newsTab2', newsData.investment);
+            const budgetNews = Array.isArray(newsData?.budget) ? newsData.budget : [];
+            const taxNews = Array.isArray(newsData?.tax) ? newsData.tax : [];
+            const investmentNews = Array.isArray(newsData?.investment) ? newsData.investment : [];
+            const allNews = [...budgetNews, ...taxNews, ...investmentNews];
 
-            // Update timestamp
-            document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+            if (allNews.length) {
+                const tickerHTML = [...allNews, ...allNews].map(item => `
+                    <div class="news-item">
+                        <span class="badge">BREAKING</span>
+                        <strong>${item.title}</strong> - ${item.source}
+                    </div>
+                `).join('');
+                ticker.innerHTML = tickerHTML;
+            } else {
+                ticker.innerHTML = `
+                    <div class="news-item">
+                        <span class="badge">INFO</span>
+                        <strong>Stay tuned</strong> - Updates will appear shortly
+                    </div>
+                `;
+            }
 
-            // Auto-refresh every 5 minutes
-            setInterval(() => {
-                document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString();
-            }, 300000);
+            loadNewsTab('newsTab0', budgetNews);
+            loadNewsTab('newsTab1', taxNews);
+            loadNewsTab('newsTab2', investmentNews);
         }
 
         function loadNewsTab(tabId, articles) {
             const container = document.getElementById(tabId);
-            container.innerHTML = articles.map((article, index) => `
+            if (!container) return;
+            const safeArticles = Array.isArray(articles) ? articles : [];
+
+            if (!safeArticles.length) {
+                container.innerHTML = `
+                    <div class="news-article">
+                        <h4>No updates right now</h4>
+                        <p>We will refresh this section when new stories arrive.</p>
+                        <div class="meta">
+                            <span>--</span>
+                            <span>Source: --</span>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = safeArticles.map((article, index) => `
                 <div class="news-article" style="animation-delay: ${index * 0.1}s">
                     <h4>${article.title}</h4>
                     <p>${article.content}</p>
@@ -1134,6 +1331,27 @@
                 content.style.display = i === index ? 'block' : 'none';
             });
         }
+
+        function updateOnlineStatus() {
+            const statusEl = document.getElementById('onlineStatus');
+            if (!statusEl) return;
+            if (navigator.onLine) {
+                statusEl.textContent = 'Online';
+                statusEl.classList.add('online');
+                statusEl.classList.remove('offline');
+            } else {
+                statusEl.textContent = 'Offline';
+                statusEl.classList.add('offline');
+                statusEl.classList.remove('online');
+            }
+        }
+
+        window.addEventListener('online', () => {
+            updateOnlineStatus();
+            loadLatestNews();
+        });
+
+        window.addEventListener('offline', updateOnlineStatus);
 
         // Toggle sections with animation
         document.getElementById('hasHRA').addEventListener('change', (e) => {
@@ -1314,7 +1532,8 @@
             document.getElementById('savingsAmount').textContent = 
                 `You save ${formatCurrency(savings)} compared to ${betterRegime === 'NEW' ? 'old' : 'new'} regime`;
             
-            const savingsPercent = (savings / Math.max(newCalc.tax, oldCalc.tax)) * 100;
+            const maxTax = Math.max(newCalc.tax, oldCalc.tax);
+            const savingsPercent = maxTax > 0 ? (savings / maxTax) * 100 : 0;
             setTimeout(() => {
                 document.getElementById('savingsProgress').style.width = Math.min(savingsPercent, 100) + '%';
             }, 300);
@@ -1496,38 +1715,89 @@
             });
         }
 
+        function getInvestmentTrendScores() {
+            const allArticles = [
+                ...(newsData?.budget || []),
+                ...(newsData?.tax || []),
+                ...(newsData?.investment || [])
+            ];
+
+            const textBlob = allArticles
+                .map(a => ((a.title || '') + ' ' + (a.content || '')))
+                .join(' | ')
+                .toLowerCase();
+
+            function countMatches(regex) {
+                const matches = textBlob.match(regex);
+                return matches ? matches.length : 0;
+            }
+
+            return {
+                ELSS: countMatches(/elss|equity linked saving/gi),
+                HEALTH: countMatches(/health insurance|medical insurance|mediclaim|section 80d/gi),
+                NPS: countMatches(/\bnps\b|national pension/gi),
+                HOME_LOAN: countMatches(/home loan|housing loan|section 24b|home-loan interest/gi)
+            };
+        }
+
         function generateInvestmentRecommendations() {
-            const { old: oldCalc } = calculationResults;
-            const ctc = parseFloat(document.getElementById('ctc').value) || 0;
-            
+            if (!calculationResults) return;
+
+            const trends = getInvestmentTrendScores();
+
             const recommendations = [
                 {
+                    key: 'ELSS',
                     title: '80C: ELSS Mutual Funds',
                     limit: 'Up to Rs 1,50,000',
                     benefit: `Save up to Rs ${Math.round(150000 * 0.31)} in taxes. Best for long-term wealth creation with 3-year lock-in.`
                 },
                 {
+                    key: 'HEALTH',
                     title: '80D: Health Insurance',
                     limit: 'Up to Rs 25,000 (Self) + Rs 50,000 (Parents)',
                     benefit: `Save up to Rs ${Math.round(75000 * 0.31)} while securing family health. Essential protection.`
                 },
                 {
+                    key: 'NPS',
                     title: 'NPS (80CCD 1B)',
                     limit: 'Additional Rs 50,000',
                     benefit: `Extra Rs ${Math.round(50000 * 0.31)} tax saving. Build retirement corpus with market-linked returns.`
                 },
                 {
+                    key: 'HOME_LOAN',
                     title: 'Home Loan (24b)',
                     limit: 'Interest up to Rs 2,00,000',
                     benefit: `Save up to Rs ${Math.round(200000 * 0.31)} on home loan interest. Build asset while saving tax.`
                 }
             ];
 
+            const getTrendLabel = (score) => {
+                if (score >= 3) return 'Trend: Hot right now';
+                if (score === 2) return 'Trend: Trending this week';
+                if (score === 1) return 'Trend: In the news';
+                return 'Trend: Stable long-term choice';
+            };
+
+            const sorted = recommendations
+                .map(rec => {
+                    const score = trends[rec.key] || 0;
+                    return {
+                        ...rec,
+                        trendScore: score,
+                        trendLabel: getTrendLabel(score)
+                    };
+                })
+                .sort((a, b) => b.trendScore - a.trendScore);
+
             const container = document.getElementById('investmentGrid');
-            container.innerHTML = recommendations.map((rec, index) => `
+            if (!container) return;
+
+            container.innerHTML = sorted.map((rec, index) => `
                 <div class="investment-card" style="animation-delay: ${index * 0.1}s">
                     <h5>${rec.title}</h5>
                     <div class="limit">${rec.limit}</div>
+                    <div class="trend">${rec.trendLabel}</div>
                     <div class="benefit">${rec.benefit}</div>
                 </div>
             `).join('');
@@ -1621,7 +1891,9 @@
         // Initialize on page load
         window.addEventListener('load', () => {
             loadData();
-            initializeNews();
+            updateOnlineStatus();
+            loadLatestNews();
+            setInterval(loadLatestNews, 60 * 60 * 1000);
         });
     </script>
 </body>
