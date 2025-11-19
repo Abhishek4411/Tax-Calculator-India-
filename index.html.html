@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Tax Regime Calculator - FY 2025-26</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.6s ease-out forwards;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.6s ease-out forwards;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Enhanced News Section */
+        .news-container {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 0;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .news-header {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .news-header h3 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-indicator {
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .news-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        #onlineStatus {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #onlineStatus::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .online {
+            color: #bbf7d0;
+        }
+
+        .offline {
+            color: #e2e8f0;
+        }
+
+        .news-ticker-container {
+            background: #fffbeb;
+            padding: 15px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .news-ticker {
+            display: flex;
+            gap: 50px;
+            animation: ticker 60s linear infinite;
+            white-space: nowrap;
+        }
+
+        .news-ticker:hover {
+            animation-play-state: paused;
+        }
+
+        .news-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 20px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        .news-item .badge {
+            background: var(--danger);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .news-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .news-tab {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .news-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .news-content {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .news-article {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .news-article:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+        }
+
+        .news-article h4 {
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .news-article p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .news-article .meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .form-section:nth-child(1) { animation-delay: 0.1s; }
+        .form-section:nth-child(2) { animation-delay: 0.2s; }
+        .form-section:nth-child(3) { animation-delay: 0.3s; }
+        .form-section:nth-child(4) { animation-delay: 0.4s; }
+        .form-section:nth-child(5) { animation-delay: 0.5s; }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            transform: scale(1.02);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .checkbox-group:hover {
+            background: var(--bg-light);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: var(--bg-light);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .result-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .regime-card {
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .regime-card:nth-child(1) {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .regime-card:nth-child(2) {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .regime-card.recommended {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            transform: scale(1.05);
+        }
+
+        .regime-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .regime-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .regime-card .tax-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .breakdown-table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .breakdown-table tr {
+            background: var(--bg-light);
+            transition: all 0.3s;
+        }
+
+        .breakdown-table tr:hover {
+            background: #e0e7ff;
+            transform: translateX(5px);
+        }
+
+        .breakdown-table td {
+            padding: 12px 15px;
+        }
+
+        .breakdown-table td:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .breakdown-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 12px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 1s ease;
+            animation: shimmer 2s infinite;
+            background-size: 1000px 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Investment Recommendations Section */
+        .investment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .investment-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .investment-card:nth-child(1) { animation-delay: 0.1s; }
+        .investment-card:nth-child(2) { animation-delay: 0.2s; }
+        .investment-card:nth-child(3) { animation-delay: 0.3s; }
+        .investment-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .investment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .investment-card h5 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .investment-card .limit {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .investment-card .trend {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .investment-card .benefit {
+            background: var(--bg-light);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header, .news-container, .card {
+                box-shadow: none;
+            }
+            .action-buttons, .news-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>India Tax Regime Calculator</h1>
+            <p class="subtitle">Financial Year 2025-26 (AY 2026-27) | Real-time Updates & Smart Recommendations</p>
+        </div>
+
+        <!-- Enhanced News Section -->
+        <div class="news-container">
+            <div class="news-header">
+                <h3>
+                    <span class="live-indicator"></span>
+                    Latest Tax & Finance News
+                </h3>
+                <div class="news-status">
+                    <span id="lastUpdate">Fetching latest updates...</span>
+                    <span id="onlineStatus" class="offline">Checking...</span>
+                </div>
+            </div>
+            
+            <div class="news-ticker-container">
+                <div class="news-ticker" id="newsTicker">
+                    <!-- Ticker items will be inserted here -->
+                </div>
+            </div>
+
+            <div class="news-tabs">
+                <button class="news-tab active" onclick="switchNewsTab(0)">Budget Updates</button>
+                <button class="news-tab" onclick="switchNewsTab(1)">Tax News</button>
+                <button class="news-tab" onclick="switchNewsTab(2)">Investment Trends</button>
+            </div>
+
+            <div class="news-content">
+                <div id="newsTab0" class="news-tab-content">
+                    <!-- Budget news will be loaded here -->
+                </div>
+                <div id="newsTab1" class="news-tab-content" style="display:none;">
+                    <!-- Tax news will be loaded here -->
+                </div>
+                <div id="newsTab2" class="news-tab-content" style="display:none;">
+                    <!-- Investment news will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Panel - Input Form -->
+            <div class="card">
+                <div class="card-header">Your Financial Details</div>
+
+                <!-- Basic Salary Info -->
+                <div class="form-section">
+                    <div class="section-title">Basic Income</div>
+                    <div class="input-group">
+                        <label>Annual CTC / Gross Income (Yearly)</label>
+                        <input type="number" id="ctc" placeholder="2500000" value="2500000">
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Basic Salary (Annual)</label>
+                            <input type="number" id="basic" placeholder="1250000" value="1250000">
+                        </div>
+                        <div class="input-group">
+                            <label>DA (Annual)</label>
+                            <input type="number" id="da" placeholder="0" value="0">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        All amounts in this calculator are annual. If you only know monthly values, multiply by 12 and enter the yearly number.
+                    </div>
+                </div>
+
+                <!-- HRA Section -->
+                <div class="form-section">
+                    <div class="section-title">HRA Details (Old Regime Only)</div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="hasHRA">
+                        <label for="hasHRA">I receive HRA and pay rent</label>
+                    </div>
+                    <div id="hraSection" class="hidden">
+                        <div class="input-group">
+                            <label>HRA Received (Annual)</label>
+                            <input type="number" id="hraReceived" placeholder="500000" value="500000">
+                        </div>
+                        <div class="input-group">
+                            <label>Rent Paid (Annual)</label>
+                            <input type="number" id="rentPaid" placeholder="600000" value="600000">
+                        </div>
+                        <div class="input-group">
+                            <label>City Type</label>
+                            <select id="cityType">
+                                <option value="metro">Metro (Delhi/Mumbai/Kolkata/Chennai)</option>
+                                <option value="nonmetro">Non-Metro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Home Loan Section -->
+                <div class="form-section">
+                    <div class="section-title">Home Loan</div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="hasHomeLoan">
+                        <label for="hasHomeLoan">I have a home loan</label>
+                    </div>
+                    <div id="homeLoanSection" class="hidden">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>Principal (Annual)</label>
+                                <input type="number" id="homeLoanPrincipal" placeholder="150000" value="150000">
+                            </div>
+                            <div class="input-group">
+                                <label>Interest (Annual)</label>
+                                <input type="number" id="homeLoanInterest" placeholder="200000" value="200000">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Property Type</label>
+                            <select id="propertyType">
+                                <option value="selfOccupied">Self-Occupied</option>
+                                <option value="letOut">Let Out</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 80C Investments -->
+                <div class="form-section">
+                    <div class="section-title">80C Investments (Old Regime)</div>
+                    <div class="input-group">
+                        <label>EPF/VPF Contribution (Annual)</label>
+                        <input type="number" id="epf" placeholder="150000" value="150000">
+                    </div>
+                    <div class="input-group">
+                        <label>PPF/ELSS/NSC/Others (Annual Contribution)</label>
+                        <input type="number" id="other80c" placeholder="0" value="0">
+                    </div>
+                    <div class="info-box">
+                        Maximum 80C limit: Rs 1,50,000 (includes EPF + home loan principal)
+                    </div>
+                </div>
+
+                <!-- 80D Health Insurance -->
+                <div class="form-section">
+                    <div class="section-title">80D Health Insurance (Old Regime)</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Self/Family Premium (Annual)</label>
+                            <input type="number" id="healthSelf" placeholder="25000" value="25000">
+                        </div>
+                        <div class="input-group">
+                            <label>Parents Premium (Annual)</label>
+                            <input type="number" id="healthParents" placeholder="0" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NPS Section -->
+                <div class="form-section">
+                    <div class="section-title">NPS (Both Regimes)</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Employer NPS (Annual Contribution)</label>
+                            <input type="number" id="npsEmployer" placeholder="0" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Self NPS 80CCD(1B) (Annual Contribution)</label>
+                            <input type="number" id="npsSelf" placeholder="0" value="0">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        Employer NPS: Excluded from taxable income in both regimes (up to 14% of basic+DA)
+                    </div>
+                </div>
+
+                <!-- Other Deductions -->
+                <div class="form-section">
+                    <div class="section-title">Other Deductions (Old Regime)</div>
+                    <div class="input-group">
+                        <label>80E Education Loan Interest (Annual)</label>
+                        <input type="number" id="eduLoanInterest" placeholder="0" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>LTA (Leave Travel Allowance, Annual)</label>
+                        <input type="number" id="lta" placeholder="0" value="0">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="calculateTax()">
+                    Calculate Tax
+                </button>
+            </div>
+
+            <!-- Right Panel - Results -->
+            <div>
+                <!-- Recommendation Card -->
+                <div id="recommendationCard" class="result-card hidden">
+                    <h3>Smart Recommendation</h3>
+                    <div class="result-value" id="recommendedRegime"></div>
+                    <div id="savingsAmount"></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="savingsProgress"></div>
+                    </div>
+                </div>
+
+                <!-- Comparison Cards -->
+                <div class="comparison-grid hidden" id="comparisonGrid">
+                    <div class="regime-card" id="newRegimeCard">
+                        <span class="badge badge-success hidden" id="newBadge">RECOMMENDED</span>
+                        <h4>New Tax Regime</h4>
+                        <div class="tax-amount" id="newTaxAmount">Rs 0</div>
+                        <p id="newTakeHome"></p>
+                    </div>
+                    <div class="regime-card" id="oldRegimeCard">
+                        <span class="badge badge-success hidden" id="oldBadge">RECOMMENDED</span>
+                        <h4>Old Tax Regime</h4>
+                        <div class="tax-amount" id="oldTaxAmount">Rs 0</div>
+                        <p id="oldTakeHome"></p>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown Tabs -->
+                <div class="card hidden" id="detailsCard">
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab(0)">New Regime</button>
+                        <button class="tab" onclick="switchTab(1)">Old Regime</button>
+                        <button class="tab" onclick="switchTab(2)">Visual Comparison</button>
+                        <button class="tab" onclick="switchTab(3)">Investment Guide</button>
+                    </div>
+
+                    <div class="tab-content active" id="newDetails">
+                        <h4 style="margin-bottom: 15px;">New Regime Calculation Breakdown</h4>
+                        <table class="breakdown-table" id="newBreakdownTable"></table>
+                    </div>
+
+                    <div class="tab-content" id="oldDetails">
+                        <h4 style="margin-bottom: 15px;">Old Regime Calculation Breakdown</h4>
+                        <table class="breakdown-table" id="oldBreakdownTable"></table>
+                    </div>
+
+                    <div class="tab-content" id="visualComparison">
+                        <div class="chart-container">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="breakdownChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="slabChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="investmentGuide">
+                        <h4 style="margin-bottom: 15px;">Recommended Investment Strategies</h4>
+                        <div class="investment-grid" id="investmentGrid"></div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="downloadExcel()">
+                            Download Excel Report
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.print()">
+                            Print Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tax Slabs for FY 2025-26
+        const NEW_REGIME_SLABS = [
+            { limit: 400000, rate: 0 },
+            { limit: 800000, rate: 0.05 },
+            { limit: 1200000, rate: 0.10 },
+            { limit: 1600000, rate: 0.15 },
+            { limit: 2000000, rate: 0.20 },
+            { limit: 2400000, rate: 0.25 },
+            { limit: Infinity, rate: 0.30 }
+        ];
+
+        const OLD_REGIME_SLABS = [
+            { limit: 250000, rate: 0 },
+            { limit: 500000, rate: 0.05 },
+            { limit: 1000000, rate: 0.20 },
+            { limit: Infinity, rate: 0.30 }
+        ];
+
+        const STANDARD_DEDUCTION_NEW = 75000;
+        const STANDARD_DEDUCTION_OLD = 50000;
+        const REBATE_NEW = 1275000;
+        const REBATE_OLD = 500000;
+        const CESS_RATE = 0.04;
+
+        let calculationResults = null;
+        let charts = {};
+
+        // News Management
+        const staticNewsData = {
+            budget: [
+                {
+                    title: "Budget 2025: New Tax Rebate Increased to Rs 12.75 Lakh",
+                    content: "Finance Minister announces significant relief for middle-class taxpayers. The rebate under new regime now covers income up to Rs 12.75 lakh, effectively making it tax-free.",
+                    time: "2 hours ago",
+                    source: "Economic Times"
+                },
+                {
+                    title: "Top Tax Slab Revised: 30% Now Applies Above Rs 24 Lakh",
+                    content: "Major restructuring of income tax slabs announced. The highest tax rate of 30% will now apply only to income exceeding Rs 24 lakh annually.",
+                    time: "5 hours ago",
+                    source: "Business Standard"
+                },
+                {
+                    title: "Standard Deduction Increased to Rs 75,000 for Salaried Employees",
+                    content: "Government increases standard deduction from Rs 50,000 to Rs 75,000 under new tax regime, providing additional Rs 25,000 relief.",
+                    time: "1 day ago",
+                    source: "Mint"
+                }
+            ],
+            tax: [
+                {
+                    title: "ITR Filing Deadline Extended: New Date Announced",
+                    content: "Income Tax Department extends the deadline for filing ITR for AY 2025-26. Taxpayers get additional time to comply.",
+                    time: "3 hours ago",
+                    source: "CBDT"
+                },
+                {
+                    title: "New AIS Format: Enhanced Annual Information Statement",
+                    content: "Income Tax portal launches improved AIS with better categorization of income sources and TDS information.",
+                    time: "6 hours ago",
+                    source: "Income Tax India"
+                },
+                {
+                    title: "Tax Benefits on Home Loan: Section 24(b) Guide",
+                    content: "Complete guide to claiming home loan interest deduction up to Rs 2 lakh for self-occupied property under old regime.",
+                    time: "1 day ago",
+                    source: "ClearTax"
+                }
+            ],
+            investment: [
+                {
+                    title: "ELSS Mutual Funds: Best Tax-Saving Option for 2025",
+                    content: "Equity Linked Saving Schemes continue to offer best returns among 80C investment options with 3-year lock-in period.",
+                    time: "4 hours ago",
+                    source: "MoneyControl"
+                },
+                {
+                    title: "NPS Tier-II: Additional Tax Benefits Announced",
+                    content: "New provisions allow enhanced tax benefits for NPS investments. Employer contribution up to 14% of salary now tax-free.",
+                    time: "7 hours ago",
+                    source: "PFRDA"
+                },
+                {
+                    title: "PPF Interest Rate Revised: Q4 FY2025 Update",
+                    content: "Public Provident Fund interest rate maintained at competitive levels. Continues to be attractive for long-term tax-free returns.",
+                    time: "2 days ago",
+                    source: "Finance Ministry"
+                }
+            ]
+        };
+
+        let newsData = staticNewsData;
+
+        const NEWS_CACHE_KEY = 'taxCalcNewsCache_v1';
+
+        async function fetchNewsFromAPI() {
+            const urls = [
+                'https://saurav.tech/NewsAPI/top-headlines/category/business/in.json',
+                'https://saurav.tech/NewsAPI/top-headlines/category/general/in.json'
+            ];
+
+            const results = await Promise.allSettled(urls.map(url => fetch(url)));
+
+            const articles = [];
+            for (const r of results) {
+                if (r.status === 'fulfilled' && r.value.ok) {
+                    const data = await r.value.json();
+                    if (Array.isArray(data.articles)) {
+                        articles.push(...data.articles);
+                    }
+                }
+            }
+
+            if (!articles.length) {
+                throw new Error('No news articles from API');
+            }
+
+            const budget = [];
+            const tax = [];
+            const investment = [];
+
+            const BUDGET_REGEX = /(budget|union budget|finance minister|fm speech)/i;
+            const TAX_REGEX = /(income tax|ITR|tax slab|TDS|TCS|CBDT|AIS|Section 87A|new tax regime|old tax regime)/i;
+            const INVEST_REGEX = /(ELSS|mutual fund|NPS|PPF|FD|fixed deposit|SIP|home loan|interest rate|personal finance|ULIP|index fund)/i;
+
+            for (const a of articles) {
+                const title = a.title || '';
+                const desc = a.description || '';
+                const text = title + ' ' + desc;
+
+                const item = {
+                    title,
+                    content: desc,
+                    time: a.publishedAt ? new Date(a.publishedAt).toLocaleString('en-IN') : 'Just now',
+                    source: (a.source && a.source.name) || 'News'
+                };
+
+                if (BUDGET_REGEX.test(text)) budget.push(item);
+                if (TAX_REGEX.test(text)) tax.push(item);
+                if (INVEST_REGEX.test(text)) investment.push(item);
+            }
+
+            const fallbackArticle = (article) => ({
+                title: article.title || 'Latest update',
+                content: article.description || '',
+                time: article.publishedAt ? new Date(article.publishedAt).toLocaleString('en-IN') : 'Just now',
+                source: (article.source && article.source.name) || 'News'
+            });
+
+            if (!budget.length && articles[0]) budget.push(fallbackArticle(articles[0]));
+            if (!tax.length && articles[1]) tax.push(fallbackArticle(articles[1]));
+            if (!investment.length && articles[2]) investment.push(fallbackArticle(articles[2]));
+
+            return { budget, tax, investment };
+        }
+
+        async function loadLatestNews() {
+            const lastUpdateEl = document.getElementById('lastUpdate');
+            initializeNews();
+
+            try {
+                if (navigator.onLine) {
+                    const latest = await fetchNewsFromAPI();
+                    newsData = latest;
+
+                    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({
+                        fetchedAt: Date.now(),
+                        newsData: latest
+                    }));
+
+                    if (lastUpdateEl) {
+                        lastUpdateEl.textContent = 'Updated from internet: ' + new Date().toLocaleTimeString('en-IN');
+                    }
+                } else {
+                    throw new Error('Offline');
+                }
+            } catch (e) {
+                const cached = localStorage.getItem(NEWS_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        if (parsed && parsed.newsData) {
+                            newsData = parsed.newsData;
+                            if (lastUpdateEl) {
+                                if (parsed.fetchedAt) {
+                                    lastUpdateEl.textContent = 'Using cached news from: ' + new Date(parsed.fetchedAt).toLocaleString('en-IN');
+                                } else {
+                                    lastUpdateEl.textContent = 'Using cached news';
+                                }
+                            }
+                        } else {
+                            newsData = staticNewsData;
+                            if (lastUpdateEl) {
+                                lastUpdateEl.textContent = 'Using built-in offline news';
+                            }
+                        }
+                    } catch {
+                        newsData = staticNewsData;
+                        if (lastUpdateEl) {
+                            lastUpdateEl.textContent = 'Using built-in offline news';
+                        }
+                    }
+                } else {
+                    newsData = staticNewsData;
+                    if (lastUpdateEl) {
+                        lastUpdateEl.textContent = 'Using built-in offline news';
+                    }
+                }
+            }
+
+            initializeNews();
+
+            if (calculationResults) {
+                generateInvestmentRecommendations();
+            }
+        }
+
+        function initializeNews() {
+            const ticker = document.getElementById('newsTicker');
+            if (!ticker) return;
+
+            const budgetNews = Array.isArray(newsData?.budget) ? newsData.budget : [];
+            const taxNews = Array.isArray(newsData?.tax) ? newsData.tax : [];
+            const investmentNews = Array.isArray(newsData?.investment) ? newsData.investment : [];
+            const allNews = [...budgetNews, ...taxNews, ...investmentNews];
+
+            if (allNews.length) {
+                const tickerHTML = [...allNews, ...allNews].map(item => `
+                    <div class="news-item">
+                        <span class="badge">BREAKING</span>
+                        <strong>${item.title}</strong> - ${item.source}
+                    </div>
+                `).join('');
+                ticker.innerHTML = tickerHTML;
+            } else {
+                ticker.innerHTML = `
+                    <div class="news-item">
+                        <span class="badge">INFO</span>
+                        <strong>Stay tuned</strong> - Updates will appear shortly
+                    </div>
+                `;
+            }
+
+            loadNewsTab('newsTab0', budgetNews);
+            loadNewsTab('newsTab1', taxNews);
+            loadNewsTab('newsTab2', investmentNews);
+        }
+
+        function loadNewsTab(tabId, articles) {
+            const container = document.getElementById(tabId);
+            if (!container) return;
+            const safeArticles = Array.isArray(articles) ? articles : [];
+
+            if (!safeArticles.length) {
+                container.innerHTML = `
+                    <div class="news-article">
+                        <h4>No updates right now</h4>
+                        <p>We will refresh this section when new stories arrive.</p>
+                        <div class="meta">
+                            <span>--</span>
+                            <span>Source: --</span>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = safeArticles.map((article, index) => `
+                <div class="news-article" style="animation-delay: ${index * 0.1}s">
+                    <h4>${article.title}</h4>
+                    <p>${article.content}</p>
+                    <div class="meta">
+                        <span>${article.time}</span>
+                        <span>Source: ${article.source}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchNewsTab(index) {
+            const tabs = document.querySelectorAll('.news-tab');
+            const contents = document.querySelectorAll('.news-tab-content');
+            
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            contents.forEach((content, i) => {
+                content.style.display = i === index ? 'block' : 'none';
+            });
+        }
+
+        function updateOnlineStatus() {
+            const statusEl = document.getElementById('onlineStatus');
+            if (!statusEl) return;
+            if (navigator.onLine) {
+                statusEl.textContent = 'Online';
+                statusEl.classList.add('online');
+                statusEl.classList.remove('offline');
+            } else {
+                statusEl.textContent = 'Offline';
+                statusEl.classList.add('offline');
+                statusEl.classList.remove('online');
+            }
+        }
+
+        window.addEventListener('online', () => {
+            updateOnlineStatus();
+            loadLatestNews();
+        });
+
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Toggle sections with animation
+        document.getElementById('hasHRA').addEventListener('change', (e) => {
+            const section = document.getElementById('hraSection');
+            if (e.target.checked) {
+                section.classList.remove('hidden');
+                section.style.animation = 'fadeIn 0.5s ease-out';
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('hasHomeLoan').addEventListener('change', (e) => {
+            const section = document.getElementById('homeLoanSection');
+            if (e.target.checked) {
+                section.classList.remove('hidden');
+                section.style.animation = 'fadeIn 0.5s ease-out';
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+
+        // Calculate HRA Exemption
+        function calculateHRA() {
+            if (!document.getElementById('hasHRA').checked) return 0;
+
+            const hraReceived = parseFloat(document.getElementById('hraReceived').value) || 0;
+            const rentPaid = parseFloat(document.getElementById('rentPaid').value) || 0;
+            const basic = parseFloat(document.getElementById('basic').value) || 0;
+            const da = parseFloat(document.getElementById('da').value) || 0;
+            const basicDA = basic + da;
+            const isMetro = document.getElementById('cityType').value === 'metro';
+
+            const exemption1 = hraReceived;
+            const exemption2 = basicDA * (isMetro ? 0.50 : 0.40);
+            const exemption3 = Math.max(0, rentPaid - (basicDA * 0.10));
+
+            return Math.min(exemption1, exemption2, exemption3);
+        }
+
+        // Calculate tax based on slabs
+        function calculateTaxOnSlabs(income, slabs) {
+            let tax = 0;
+            let previousLimit = 0;
+
+            for (const slab of slabs) {
+                if (income <= previousLimit) break;
+                const taxableInSlab = Math.min(income, slab.limit) - previousLimit;
+                tax += taxableInSlab * slab.rate;
+                previousLimit = slab.limit;
+            }
+
+            return tax;
+        }
+
+        // Main calculation function
+        function calculateTax() {
+            const ctc = parseFloat(document.getElementById('ctc').value) || 0;
+            const basic = parseFloat(document.getElementById('basic').value) || 0;
+            const epf = parseFloat(document.getElementById('epf').value) || 0;
+            const npsEmployer = parseFloat(document.getElementById('npsEmployer').value) || 0;
+
+            // NEW REGIME CALCULATION
+            const grossIncomeNew = ctc - npsEmployer;
+            const taxableIncomeNew = grossIncomeNew - STANDARD_DEDUCTION_NEW;
+            let taxNew = calculateTaxOnSlabs(taxableIncomeNew, NEW_REGIME_SLABS);
+            
+            if (taxableIncomeNew <= REBATE_NEW) {
+                taxNew = 0;
+            }
+            const cessNew = taxNew * CESS_RATE;
+            const totalTaxNew = Math.round(taxNew + cessNew);
+            const takeHomeNew = ctc - totalTaxNew;
+
+            // OLD REGIME CALCULATION
+            const grossIncomeOld = ctc - npsEmployer;
+            
+            const hraExemption = calculateHRA();
+            
+            let homeLoanPrincipal = 0;
+            let homeLoanInterest = 0;
+            if (document.getElementById('hasHomeLoan').checked) {
+                homeLoanPrincipal = parseFloat(document.getElementById('homeLoanPrincipal').value) || 0;
+                homeLoanInterest = parseFloat(document.getElementById('homeLoanInterest').value) || 0;
+                const propertyType = document.getElementById('propertyType').value;
+                if (propertyType === 'selfOccupied') {
+                    homeLoanInterest = Math.min(homeLoanInterest, 200000);
+                }
+            }
+
+            const other80c = parseFloat(document.getElementById('other80c').value) || 0;
+            const total80C = Math.min(epf + homeLoanPrincipal + other80c, 150000);
+
+            const healthSelf = parseFloat(document.getElementById('healthSelf').value) || 0;
+            const healthParents = parseFloat(document.getElementById('healthParents').value) || 0;
+            const total80D = healthSelf + healthParents;
+
+            const npsSelf = parseFloat(document.getElementById('npsSelf').value) || 0;
+            const eduLoanInterest = parseFloat(document.getElementById('eduLoanInterest').value) || 0;
+            const lta = parseFloat(document.getElementById('lta').value) || 0;
+
+            const totalDeductionsOld = STANDARD_DEDUCTION_OLD + hraExemption + total80C + 
+                                      total80D + npsSelf + homeLoanInterest + eduLoanInterest + lta;
+
+            const taxableIncomeOld = Math.max(0, grossIncomeOld - totalDeductionsOld);
+            let taxOld = calculateTaxOnSlabs(taxableIncomeOld, OLD_REGIME_SLABS);
+            
+            if (taxableIncomeOld <= REBATE_OLD) {
+                taxOld = 0;
+            }
+            const cessOld = taxOld * CESS_RATE;
+            const totalTaxOld = Math.round(taxOld + cessOld);
+            const takeHomeOld = ctc - totalTaxOld;
+
+            // Store results
+            calculationResults = {
+                new: {
+                    gross: grossIncomeNew,
+                    taxableIncome: taxableIncomeNew,
+                    tax: totalTaxNew,
+                    takeHome: takeHomeNew,
+                    breakdown: [
+                        ['Gross Income', formatCurrency(grossIncomeNew)],
+                        ['Standard Deduction', formatCurrency(STANDARD_DEDUCTION_NEW)],
+                        ['Taxable Income', formatCurrency(taxableIncomeNew)],
+                        ['Income Tax', formatCurrency(taxNew)],
+                        ['Health & Education Cess (4%)', formatCurrency(cessNew)],
+                        ['Total Tax', formatCurrency(totalTaxNew)],
+                        ['Take Home', formatCurrency(takeHomeNew)]
+                    ]
+                },
+                old: {
+                    gross: grossIncomeOld,
+                    taxableIncome: taxableIncomeOld,
+                    tax: totalTaxOld,
+                    takeHome: takeHomeOld,
+                    deductions: totalDeductionsOld,
+                    breakdown: [
+                        ['Gross Income', formatCurrency(grossIncomeOld)],
+                        ['Standard Deduction', formatCurrency(STANDARD_DEDUCTION_OLD)],
+                        ['HRA Exemption', formatCurrency(hraExemption)],
+                        ['80C Deductions', formatCurrency(total80C)],
+                        ['80D Health Insurance', formatCurrency(total80D)],
+                        ['Home Loan Interest (24b)', formatCurrency(homeLoanInterest)],
+                        ['80CCD(1B) NPS', formatCurrency(npsSelf)],
+                        ['80E Education Loan', formatCurrency(eduLoanInterest)],
+                        ['LTA', formatCurrency(lta)],
+                        ['Total Deductions', formatCurrency(totalDeductionsOld)],
+                        ['Taxable Income', formatCurrency(taxableIncomeOld)],
+                        ['Income Tax', formatCurrency(taxOld)],
+                        ['Health & Education Cess (4%)', formatCurrency(cessOld)],
+                        ['Total Tax', formatCurrency(totalTaxOld)],
+                        ['Take Home', formatCurrency(takeHomeOld)]
+                    ]
+                }
+            };
+
+            displayResults();
+            generateInvestmentRecommendations();
+        }
+
+        function formatCurrency(amount) {
+            return 'Rs ' + amount.toLocaleString('en-IN');
+        }
+
+        function displayResults() {
+            const { new: newCalc, old: oldCalc } = calculationResults;
+            const savings = Math.abs(newCalc.tax - oldCalc.tax);
+            const betterRegime = newCalc.tax < oldCalc.tax ? 'NEW' : 'OLD';
+
+            // Show recommendation card with animation
+            const recCard = document.getElementById('recommendationCard');
+            recCard.classList.remove('hidden');
+            recCard.style.animation = 'slideInRight 0.6s ease-out';
+            
+            document.getElementById('recommendedRegime').textContent = 
+                betterRegime === 'NEW' ? 'Choose New Regime' : 'Choose Old Regime';
+            document.getElementById('savingsAmount').textContent = 
+                `You save ${formatCurrency(savings)} compared to ${betterRegime === 'NEW' ? 'old' : 'new'} regime`;
+            
+            const maxTax = Math.max(newCalc.tax, oldCalc.tax);
+            const savingsPercent = maxTax > 0 ? (savings / maxTax) * 100 : 0;
+            setTimeout(() => {
+                document.getElementById('savingsProgress').style.width = Math.min(savingsPercent, 100) + '%';
+            }, 300);
+
+            // Show comparison grid
+            document.getElementById('comparisonGrid').classList.remove('hidden');
+            document.getElementById('newTaxAmount').textContent = formatCurrency(newCalc.tax);
+            document.getElementById('newTakeHome').textContent = `Take home: ${formatCurrency(newCalc.takeHome)}`;
+            document.getElementById('oldTaxAmount').textContent = formatCurrency(oldCalc.tax);
+            document.getElementById('oldTakeHome').textContent = `Take home: ${formatCurrency(oldCalc.takeHome)}`;
+
+            // Show badges
+            document.getElementById('newBadge').classList.toggle('hidden', betterRegime !== 'NEW');
+            document.getElementById('oldBadge').classList.toggle('hidden', betterRegime !== 'OLD');
+            document.getElementById('newRegimeCard').classList.toggle('recommended', betterRegime === 'NEW');
+            document.getElementById('oldRegimeCard').classList.toggle('recommended', betterRegime === 'OLD');
+
+            // Populate breakdown tables
+            populateTable('newBreakdownTable', newCalc.breakdown);
+            populateTable('oldBreakdownTable', oldCalc.breakdown);
+
+            // Show details card
+            document.getElementById('detailsCard').classList.remove('hidden');
+
+            // Create charts
+            setTimeout(() => createCharts(), 300);
+        }
+
+        function populateTable(tableId, data) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = data.map((row, index) => `
+                <tr style="animation-delay: ${index * 0.05}s; opacity: 0; animation: fadeIn 0.5s ease-out forwards;">
+                    <td>${row[0]}</td>
+                    <td>${row[1]}</td>
+                </tr>
+            `).join('');
+        }
+
+        function createCharts() {
+            const { new: newCalc, old: oldCalc } = calculationResults;
+
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => chart && chart.destroy());
+
+            // Comparison Chart
+            const ctx1 = document.getElementById('comparisonChart').getContext('2d');
+            charts.comparison = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Tax Payable', 'Take Home'],
+                    datasets: [{
+                        label: 'New Regime',
+                        data: [newCalc.tax, newCalc.takeHome],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2
+                    }, {
+                        label: 'Old Regime',
+                        data: [oldCalc.tax, oldCalc.takeHome],
+                        backgroundColor: 'rgba(118, 75, 162, 0.8)',
+                        borderColor: '#764ba2',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tax vs Take Home Comparison',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => 'Rs ' + (value/100000).toFixed(1) + 'L'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Breakdown Pie Chart
+            const ctx2 = document.getElementById('breakdownChart').getContext('2d');
+            charts.breakdown = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Take Home (New)', 'Tax (New)', 'Take Home (Old)', 'Tax (Old)'],
+                    datasets: [{
+                        data: [newCalc.takeHome, newCalc.tax, oldCalc.takeHome, oldCalc.tax],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(245, 158, 11, 0.8)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        animateRotate: true,
+                        animateScale: true
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Income Distribution',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Tax Slab Visualization
+            const ctx3 = document.getElementById('slabChart').getContext('2d');
+            charts.slab = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: ['0', '5L', '10L', '15L', '20L', '25L', '30L'],
+                    datasets: [{
+                        label: 'New Regime Tax Rate',
+                        data: [0, 5, 10, 15, 20, 25, 30],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Old Regime Tax Rate',
+                        data: [0, 5, 20, 30, 30, 30, 30],
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tax Slab Rates Comparison',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getInvestmentTrendScores() {
+            const allArticles = [
+                ...(newsData?.budget || []),
+                ...(newsData?.tax || []),
+                ...(newsData?.investment || [])
+            ];
+
+            const textBlob = allArticles
+                .map(a => ((a.title || '') + ' ' + (a.content || '')))
+                .join(' | ')
+                .toLowerCase();
+
+            function countMatches(regex) {
+                const matches = textBlob.match(regex);
+                return matches ? matches.length : 0;
+            }
+
+            return {
+                ELSS: countMatches(/elss|equity linked saving/gi),
+                HEALTH: countMatches(/health insurance|medical insurance|mediclaim|section 80d/gi),
+                NPS: countMatches(/\bnps\b|national pension/gi),
+                HOME_LOAN: countMatches(/home loan|housing loan|section 24b|home-loan interest/gi)
+            };
+        }
+
+        function generateInvestmentRecommendations() {
+            if (!calculationResults) return;
+
+            const trends = getInvestmentTrendScores();
+
+            const recommendations = [
+                {
+                    key: 'ELSS',
+                    title: '80C: ELSS Mutual Funds',
+                    limit: 'Up to Rs 1,50,000',
+                    benefit: `Save up to Rs ${Math.round(150000 * 0.31)} in taxes. Best for long-term wealth creation with 3-year lock-in.`
+                },
+                {
+                    key: 'HEALTH',
+                    title: '80D: Health Insurance',
+                    limit: 'Up to Rs 25,000 (Self) + Rs 50,000 (Parents)',
+                    benefit: `Save up to Rs ${Math.round(75000 * 0.31)} while securing family health. Essential protection.`
+                },
+                {
+                    key: 'NPS',
+                    title: 'NPS (80CCD 1B)',
+                    limit: 'Additional Rs 50,000',
+                    benefit: `Extra Rs ${Math.round(50000 * 0.31)} tax saving. Build retirement corpus with market-linked returns.`
+                },
+                {
+                    key: 'HOME_LOAN',
+                    title: 'Home Loan (24b)',
+                    limit: 'Interest up to Rs 2,00,000',
+                    benefit: `Save up to Rs ${Math.round(200000 * 0.31)} on home loan interest. Build asset while saving tax.`
+                }
+            ];
+
+            const getTrendLabel = (score) => {
+                if (score >= 3) return 'Trend: Hot right now';
+                if (score === 2) return 'Trend: Trending this week';
+                if (score === 1) return 'Trend: In the news';
+                return 'Trend: Stable long-term choice';
+            };
+
+            const sorted = recommendations
+                .map(rec => {
+                    const score = trends[rec.key] || 0;
+                    return {
+                        ...rec,
+                        trendScore: score,
+                        trendLabel: getTrendLabel(score)
+                    };
+                })
+                .sort((a, b) => b.trendScore - a.trendScore);
+
+            const container = document.getElementById('investmentGrid');
+            if (!container) return;
+
+            container.innerHTML = sorted.map((rec, index) => `
+                <div class="investment-card" style="animation-delay: ${index * 0.1}s">
+                    <h5>${rec.title}</h5>
+                    <div class="limit">${rec.limit}</div>
+                    <div class="trend">${rec.trendLabel}</div>
+                    <div class="benefit">${rec.benefit}</div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            contents.forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+                if (i === index) {
+                    content.style.animation = 'fadeIn 0.5s ease-out';
+                }
+            });
+        }
+
+        function downloadExcel() {
+            if (!calculationResults) {
+                alert('Please calculate tax first');
+                return;
+            }
+
+            const { new: newCalc, old: oldCalc } = calculationResults;
+            let csv = 'India Tax Calculator Report - FY 2025-26\n';
+            csv += 'Generated on: ' + new Date().toLocaleString() + '\n\n';
+            
+            csv += 'COMPARISON SUMMARY\n';
+            csv += 'Regime,Tax Payable,Take Home\n';
+            csv += `New Regime,${newCalc.tax},${newCalc.takeHome}\n`;
+            csv += `Old Regime,${oldCalc.tax},${oldCalc.takeHome}\n\n`;
+            
+            csv += 'NEW REGIME BREAKDOWN\n';
+            newCalc.breakdown.forEach(row => csv += `${row[0]},${row[1]}\n`);
+            csv += '\n';
+
+            csv += 'OLD REGIME BREAKDOWN\n';
+            oldCalc.breakdown.forEach(row => csv += `${row[0]},${row[1]}\n`);
+
+            csv += '\n\nRECOMMENDATION\n';
+            csv += newCalc.tax < oldCalc.tax ? 'Choose New Regime' : 'Choose Old Regime';
+            csv += `\nTax Savings: ${Math.abs(newCalc.tax - oldCalc.tax)}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Tax_Calculation_Report_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Save to localStorage
+        function saveData() {
+            const inputs = document.querySelectorAll('input, select');
+            const data = {};
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    data[input.id] = input.checked;
+                } else {
+                    data[input.id] = input.value;
+                }
+            });
+            localStorage.setItem('taxCalcData', JSON.stringify(data));
+        }
+
+        // Load from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('taxCalcData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                Object.keys(data).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        if (input.type === 'checkbox') {
+                            input.checked = data[key];
+                            input.dispatchEvent(new Event('change'));
+                        } else {
+                            input.value = data[key];
+                        }
+                    }
+                });
+            }
+        }
+
+        // Auto-save on input change
+        document.addEventListener('input', saveData);
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            loadData();
+            updateOnlineStatus();
+            loadLatestNews();
+            setInterval(loadLatestNews, 60 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>
